@@ -4,77 +4,110 @@ const btn = document.querySelector('.add-btn');
 const inputText = document.getElementById('myText');
 const section = document.querySelector('section');
 
+let todos = [];
+
+window.onload = () => {
+  if (localStorage.todo) {
+    todos = JSON.parse(localStorage.todo);
+    renderTodoList();
+  }
+};
+
 const addToList = function () {
-  {
-    // create outerDiv container element
-    const divContainer = document.createElement('div');
-    // create innerDiv element
-    const elem = document.createElement('div');
-    // create edit button
-    const editBtn = document.createElement('button');
-    // create delete button
-    const deleteBtn = document.createElement('button');
+  const textVal = inputText.value;
 
-    const textVal = inputText.value;
+  if (textVal === '') {
+    alert('Enter a Value');
+  } else {
+    let currentTodo = {
+      id: new Date().getTime(),
+      todoText: textVal,
+      isCompleted: false,
+    };
 
-    if (textVal === '') {
-      alert('Enter a value');
-    } else {
-      editBtn.classList.add('btn-edit');
-      editBtn.innerHTML = 'Edit';
+    todos.push(currentTodo);
+    console.log(todos);
 
-      deleteBtn.setAttribute('class', 'btn-delete');
-      deleteBtn.innerText = 'Delete';
+    renderTodoList();
+    inputText.value = '';
+  }
+};
 
-      elem.classList.add('element');
-      elem.textContent = textVal;
+btn.addEventListener('click', addToList);
 
-      divContainer.classList.add('container');
-      divContainer.appendChild(elem);
-      divContainer.appendChild(editBtn);
-      divContainer.appendChild(deleteBtn);
+document.addEventListener('keydown', function (e) {
+  if (e.key == 'Enter') {
+    addToList();
+  }
+});
 
-      section.appendChild(divContainer);
+function renderTodoList() {
+  localStorage.setItem('todo', JSON.stringify(todos));
+  section.innerHTML = '';
 
-      inputText.value = '';
+  todos.forEach(todo => {
+    section.innerHTML += `
+      <div class="container">
+        <div class="element ${todo.isCompleted ? 'strike' : ''}">${
+      todo.todoText
+    }</div>
+        <button class="btn-edit" data-id="${
+          todo.id
+        }" onclick="editTodo(event)">Edit</button>
+        <button class="btn-toggle" data-id="${
+          todo.id
+        }" onclick="setCompleted(event)">Toggle</button>
+        <button class="btn-delete" data-id="${
+          todo.id
+        }" onclick="deleteTodo(event)">Delete</button>
+      </div>
+    `;
+  });
+}
 
-      deleteBtn.addEventListener('click', function () {
-        divContainer.remove();
-      });
+function deleteTodo(event) {
+  const id = event.target.attributes['data-id'].value;
 
-      // Editing and Saving
-      let editCont = false;
-
-      const editable = () => {
-        elem.contentEditable = 'true';
-        editCont = true;
-        editBtn.innerHTML = 'Done';
-        elem.style.backgroundColor = 'white';
-        elem.style.paddingTop = '5px';
-        elem.style.paddingBottom = '5px';
-      };
-
-      const unEditable = () => {
-        elem.contentEditable = 'false';
-        editCont = false;
-        editBtn.innerHTML = 'Edit';
-        elem.style.backgroundColor = '';
-        elem.style.padding = '0';
-      };
-
-      const editToggle = () => {
-        editCont ? unEditable() : editable();
-      };
-
-      editBtn.addEventListener('click', editToggle);
+  for (let index = 0; index < todos.length; index++) {
+    if (todos[index].id == id) {
+      todos.splice(index, 1);
+      renderTodoList();
     }
   }
+}
 
-  btn.addEventListener('click', addToList);
+function setCompleted(event) {
+  const id = event.target.attributes['data-id'].value;
 
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      addToList();
+  let mappedArray = todos.map(todo => {
+    if (todo.id == id) {
+      return { ...todo, isCompleted: !todo.isCompleted };
+    } else {
+      return todo;
     }
   });
-};
+  todos = mappedArray;
+  renderTodoList();
+}
+
+function editTodo(event) {
+  const id = event.target.attributes['data-id'].value;
+
+  let elem = event.target.previousElementSibling;
+  elem.contentEditable = true;
+  elem.focus();
+
+  elem.addEventListener('blur', event => {
+    let mappedArray = todos.map(todo => {
+      if (todo.id == id) {
+        return { ...todo, todoText: event.target.textContent };
+      } else {
+        return todo;
+      }
+    });
+
+    todos = mappedArray;
+    renderTodoList();
+    elem.contentEditable = false;
+  });
+}

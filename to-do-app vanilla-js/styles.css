@@ -118,7 +118,8 @@ input[type='text']:focus {
   outline: none;
 }
 
-.btn-delete {
+.btn-delete,
+.btn-toggle {
   width: 70px;
   height: 25px;
   padding: 3px 8px;
@@ -134,6 +135,16 @@ input[type='text']:focus {
 
   /* position: absolute;
   right: 10px; */
+}
+
+.btn-toggle {
+  border-color: blue;
+  color: blue;
+}
+
+.btn-toggle:hover {
+  background: blue;
+  color: white;
 }
 
 .btn-delete:hover {
@@ -175,4 +186,9 @@ input[type='text']:focus {
 section > i {
   width: 430px;
   font-size: 40px;
+}
+
+.strike {
+  text-decoration: line-through;
+  color: gray !important;
 }
